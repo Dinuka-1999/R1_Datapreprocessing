@@ -1,0 +1,9 @@
+.vscode
+IFTest
+Model_results
+NFN1ICD
+nnUnet_raw
+Image_Analysis/oxford-iiit-pet
+Image_Analysis/.ipynb_checkpoints
+Image_Analysis/intensity_plots
+Image_Analysis/thickness
