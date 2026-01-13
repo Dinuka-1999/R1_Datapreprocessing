@@ -7,3 +7,6 @@ Image_Analysis/oxford-iiit-pet
 Image_Analysis/.ipynb_checkpoints
 Image_Analysis/intensity_plots
 Image_Analysis/thickness
+area
+intensity_plots
+thickness
