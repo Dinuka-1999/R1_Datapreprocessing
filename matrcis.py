@@ -18,6 +18,8 @@ import math
 mpl.rcParams['font.family'] = 'DejaVu Serif'
 mpl.rcParams['font.size'] = 12
 
+image_map = {'0001': "15Ps", '0002': "E9.5", '0003': "8Ps", '0004': "13Ps", '0005': "10Ps", '0006': "19Ps",}
+
 def load_segmentation(segmentation_path):
     seg = sitk.ReadImage(segmentation_path)
     npy_image = sitk.GetArrayFromImage(seg)
@@ -68,7 +70,7 @@ def compute_metrics(reference_file: str, prediction_file: str,
     for r in labels_or_regions:
         results['metrics'][r] = {}
         mask_ref = region_or_label_to_mask(seg_ref, r)
-        mask_pred = region_or_label_to_mask(seg_pred, r+1)
+        mask_pred = region_or_label_to_mask(seg_pred, r)
 
         if per_slice:
             dice_scores = []
@@ -89,15 +91,16 @@ def compute_metrics(reference_file: str, prediction_file: str,
             results['metrics'][r]['Dice_through_z_axis'] = dice_scores
             results['metrics'][r]['IoU_through_z_axis'] = iou_scores
             # save the plots
-            # plt.figure(figsize=(12, 6))
-            # plt.plot(dice_scores, label='Dice Score', marker='.')
-            # plt.plot(iou_scores, label='IoU', marker='.')
-            # plt.title(f'{label_names[r-1]} of {reference_file.split("/")[-1].split("_")[2].split(".")[0]}')
-            # plt.xlabel('Slice Index')
-            # plt.ylabel('Metric Value')
-            # plt.ylim(0, 1)
-            # plt.legend()
-            # plt.savefig(os.path.join(folder_path,"Eval_plots",f'{reference_file.split("/")[-1].split("_")[2].split(".")[0]}_{r}.png'))
+            plt.figure(figsize=(10, 5))
+            plt.plot(dice_scores, label='Dice Score', marker='.')
+            plt.plot(iou_scores, label='IoU', marker='.')
+            plt.title(f'{label_names[r]} of {image_map[reference_file.split("/")[-1].split("_")[2].split(".")[0]]}')
+            plt.xlabel('Slice Index')
+            plt.ylabel('Metric Value')
+            plt.ylim(0, 1)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(os.path.join(folder_path,"Eval_plots",f'{reference_file.split("/")[-1].split("_")[2].split(".")[0]}_{r}.png'),dpi=300)
 
         tp, fp, fn, tn = compute_tp_fp_fn_tn(mask_ref, mask_pred, ignore_mask)
         if tp + fp + fn == 0:
@@ -217,7 +220,7 @@ def compute_metrics_on_folder(folder_ref: str, folder_pred: str, output_file: st
         ax2.set_xlabel('Z-axis (slices)')
         ax2.set_ylabel('IoU Score')
         ax2.legend()
-        fig1.savefig(os.path.join(folder_pred,"Eval_plots",f'All_Dice_IoU_through_z_axis_label_{label}.pdf'),dpi = 300)
+        fig1.savefig(os.path.join(folder_pred,"Eval_plots",f'All_Dice_through_z_axis_label_{label}.pdf'),dpi = 300)
         fig2.savefig(os.path.join(folder_pred,"Eval_plots",f'All_IoU_through_z_axis_label_{label}.pdf'),dpi = 300)
         plt.close(fig1)
         plt.close(fig2)
@@ -230,8 +233,8 @@ def compute_metrics_on_folder(folder_ref: str, folder_pred: str, output_file: st
 
 if __name__ == "__main__":
 
-    Val_Folder = "/Users/dbattagodage/Desktop/Datasets/Model_results/IF_352_6img_results/all_segs_no_bg"
-    GT_Folder = "/Users/dbattagodage/Desktop/Datasets/nnUnet_raw/Dataset352_IF_renamed_to_match_linux/labelsTr"
+    Val_Folder = "/home/cellsmb/Desktop/Dinuka/Image_Analysis/Model_results/Model_results/IF_352_6img_results/nnUNetTrainerUMambaEncNoAMP__nnUNetPlans__2d/AllSegs"
+    GT_Folder = "/home/cellsmb/Desktop/Dinuka/Image_Analysis/nnUnet_raw/labelsTr"
 
     if not os.path.exists(os.path.join(Val_Folder,"Eval_plots")):
         os.mkdir(os.path.join(Val_Folder,"Eval_plots"))
@@ -243,6 +246,7 @@ if __name__ == "__main__":
         per_slice=True,
         file_ending=".nii.gz",
         regions_or_labels=[0, 1, 2, 3, 4], # Check the compute matrics function for label mapping. Files copied from Linux desktop have labels starting from 1
+        # labels or labelsTr were changed to 0-4, coppied from the mac
         ignore_label=None,
         num_processes=8,
         chill=True
