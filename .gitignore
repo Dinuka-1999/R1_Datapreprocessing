@@ -10,3 +10,5 @@ Image_Analysis/thickness
 area
 intensity_plots
 thickness
+media
+*.nii.gz
